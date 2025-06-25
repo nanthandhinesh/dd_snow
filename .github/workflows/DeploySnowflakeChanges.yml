@@ -1,4 +1,4 @@
-name: Deploy Snowflake Changes
+name: DeploySnowflakeChanges
 
 on:
   push:
@@ -26,14 +26,17 @@ jobs:
 
       - name: Create connections.toml
         run: |
-          echo "[snowflake]" > connections.toml
-          echo "account = '${{ secrets.SF_ACCOUNT }}'" >> connections.toml
-          echo "user = '${{ secrets.SF_USERNAME }}'" >> connections.toml
-          echo "password = '${{ secrets.SF_PASSWORD }}'" >> connections.toml
-          echo "role = '${{ secrets.SF_ROLE }}'" >> connections.toml
-          echo "warehouse = '${{ secrets.SF_WAREHOUSE }}'" >> connections.toml
-          echo "database = '${{ secrets.SF_DATABASE }}'" >> connections.toml
-          echo "schema = '${{ secrets.SF_SCHEMA }}'" >> connections.toml
+          {
+            echo "[snowflake]"
+            echo "account = \"${{ secrets.SF_ACCOUNT }}\""
+            echo "user = \"${{ secrets.SF_USERNAME }}\""
+            echo "password = \"${{ secrets.SF_PASSWORD }}\""
+            echo "role = \"${{ secrets.SF_ROLE }}\""
+            echo "warehouse = \"${{ secrets.SF_WAREHOUSE }}\""
+            echo "database = \"${{ secrets.SF_DATABASE }}\""
+            echo "schema = \"${{ secrets.SF_SCHEMA }}\""
+          } > connections.toml
+
 
       - name: Run schemachange
         run: |
