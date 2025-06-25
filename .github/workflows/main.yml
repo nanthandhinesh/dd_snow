@@ -2,22 +2,24 @@ name: main
 
 on:
   push:
-    branches: [main]
-    paths: ['deploy/**']
+    branches:
+      - main
+    paths:
+      - 'deploy/**'
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-snowflake-changes:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Setup Python
+      - name: Setup Python 3.8
         uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
+          python-version: 3.8
 
       - name: Install schemachange
         run: pip install schemachange
@@ -31,7 +33,8 @@ jobs:
           echo "role = '${{ secrets.SF_ROLE }}'" >> connections.toml
           echo "warehouse = '${{ secrets.SF_WAREHOUSE }}'" >> connections.toml
           echo "database = '${{ secrets.SF_DATABASE }}'" >> connections.toml
+          echo "schema = '${{ secrets.SF_SCHEMA }}'" >> connections.toml
 
       - name: Run schemachange
         run: |
-          schemachange -f deploy -c connections.toml -a
+          schemachange -f deploy --connections-file-path connections.toml --connection-name snowflake
