@@ -5,32 +5,42 @@ on:
     branches:
       - main
     paths:
-      - 'deploy/**'
-  workflow_dispatch:
+      - 'deploy/**'  # Only trigger when files in 'deploy/' change
+  workflow_dispatch:  # Allow manual runs
 
 jobs:
   deploy-snowflake-changes-job:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      # 1. Check out your repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Use Python 3.8.x
+      # 2. Set up Python 3.8
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
+      # 3. Create connections.toml (stores Snowflake credentials)
+      - name: Create Snowflake connection config
+        run: |
+          cat <<EOF > connections.toml
+          [snowflake]
+          account = "${{ secrets.SF_ACCOUNT }}"
+          user = "${{ secrets.SF_USERNAME }}"
+          password = "${{ secrets.SF_PASSWORD }}"
+          role = "${{ secrets.SF_ROLE }}"
+          warehouse = "${{ secrets.SF_WAREHOUSE }}"
+          database = "${{ secrets.SF_DATABASE }}"
+          EOF
+
+      # 4. Install schemachange and run migrations
       - name: Run schemachange
         run: |
           pip install schemachange
           schemachange deploy \
-            -f $GITHUB_WORKSPACE/deploy \
-            -a "${{ secrets.SF_ACCOUNT }}" \
-            -u "${{ secrets.SF_USERNAME }}" \
-            -p "${{ secrets.SF_PASSWORD }}" \
-            -r "${{ secrets.SF_ROLE }}" \
-            -w "${{ secrets.SF_WAREHOUSE }}" \
-            -d "${{ secrets.SF_DATABASE }}" \
+            -f $GITHUB_WORKSPACE/deploy \  # Path to your SQL scripts
             -c "${{ secrets.SF_DATABASE }}.SCHEMACHANGE.CHANGE_HISTORY" \
             --create-change-history-table
