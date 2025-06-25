@@ -1,0 +1,37 @@
+name: main
+
+on:
+  push:
+    branches: [main]
+    paths: ['deploy/**']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Install schemachange
+        run: pip install schemachange
+
+      - name: Create connections.toml
+        run: |
+          echo "[snowflake]" > connections.toml
+          echo "account = '${{ secrets.SF_ACCOUNT }}'" >> connections.toml
+          echo "user = '${{ secrets.SF_USERNAME }}'" >> connections.toml
+          echo "password = '${{ secrets.SF_PASSWORD }}'" >> connections.toml
+          echo "role = '${{ secrets.SF_ROLE }}'" >> connections.toml
+          echo "warehouse = '${{ secrets.SF_WAREHOUSE }}'" >> connections.toml
+          echo "database = '${{ secrets.SF_DATABASE }}'" >> connections.toml
+
+      - name: Run schemachange
+        run: |
+          schemachange -f deploy -c connections.toml -a
