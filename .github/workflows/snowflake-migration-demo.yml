@@ -29,13 +29,20 @@ jobs:
           user = "${{ secrets.SF_USERNAME }}"
           password = "${{ secrets.SF_PASSWORD }}"
           role = "${{ secrets.SF_ROLE }}"
-          warehouse = "${{ secrets.SF_WAREHOUSE }}"
+          warehouse = "${{ secrets.SF_WAREHOUSE }}"  # Confirmed correct secret name
           database = "${{ secrets.SF_DATABASE }}"
           EOF
 
+      - name: Debug - Show masked config
+        run: |
+          echo "Config file contents (masked):"
+          grep -v "password" connections.toml
+
+      - name: Install schemachange
+        run: pip install schemachange
+
       - name: Run schemachange
         run: |
-          pip install schemachange
           schemachange deploy \
             -f "$GITHUB_WORKSPACE/deploy" \
             -c "${{ secrets.SF_DATABASE }}.SCHEMACHANGE.CHANGE_HISTORY" \
